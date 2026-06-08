@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pes – jednoduchá osa</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      background: #ffffff;
+      padding: 16px 0 24px;
+    }
+    svg {
+      display: block;
+      width: 100vw;
+      max-width: 100%;
+      height: auto;
+    }
+    #start-btn {
+      padding: 10px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: system-ui, -apple-system, sans-serif;
+      border: none;
+      border-radius: 8px;
+      background: #FFDB00;
+      color: #333;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    }
+    #start-btn:hover { background: #f5d000; }
+    #start-btn:disabled { opacity: 0.55; cursor: wait; }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 16px 28px;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      color: #444;
+    }
+    .controls label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .controls input {
+      width: 64px;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .controls input:focus,
+    .controls select:focus {
+      outline: 2px solid #FFDB00;
+      border-color: #FF8158;
+    }
+    .controls select {
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .variant-link {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 13px;
+      color: #666;
+      text-decoration: none;
+    }
+    .variant-link:hover { text-decoration: underline; }
+    .label {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      fill: #666;
+    }
+    .axis-line {
+      stroke: #333;
+      stroke-width: 2;
+    }
+    .axis-tick {
+      stroke: #999;
+      stroke-width: 1;
+    }
+    .axis-label {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 12px;
+      fill: #666;
+    }
+    .sec-mark {
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .sec-mark.is-visible {
+      visibility: visible;
+    }
+    .sec-mark-time {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      fill: #d35400;
+    }
+    .sec-mark-dist {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 11px;
+      fill: #666;
+    }
+  </style>
+</head>
+<body>
+<svg width="1000" height="460" viewBox="0 0 1000 460" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="1000" height="460" fill="white"/>
+
+<g class="dog-mover" id="dog1" transform="translate(-22.05, 35)">
+  <use href="#dog-body"/>
+  <g class="wheel-spinner" transform="rotate(0 46.0539 86.054)">
+    <use href="#wheel"/>
+  </g>
+</g>
+
+<g class="dog-mover" id="dog2" transform="translate(-22.05, 275)">
+  <use href="#dog-body"/>
+  <g class="wheel-spinner" transform="rotate(0 46.0539 86.054)">
+    <use href="#wheel"/>
+  </g>
+</g>
+
+<g class="axis" id="axis1" transform="translate(24, 158)"></g>
+<g class="axis" id="axis2" transform="translate(24, 398)"></g>
+
+<defs>
+<g id="dog-body">
+<path d="M71.9908 9.1049L85.9052 8.59357L82.6294 18.105L67.5923 21.1767L71.9908 9.1049Z" fill="#FFDB00" stroke="#FF8158" stroke-width="0.352413" stroke-miterlimit="10"/>
+<path d="M63.4017 65.1586L66.2661 81.9176L71.302 90.5139L74.9483 88.602C74.9483 88.602 70.257 87.8202 71.4761 66.4592C72.6916 45.0982 63.4017 65.1549 63.4017 65.1549V65.1586Z" fill="#FFDB00" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M27.2054 69.8828L28.5134 62.5501L37.1585 58.6225L49.209 33.5636L56.8943 27.8019L65.4505 41.3373L66.777 64.8029C66.777 64.8029 66.9771 75.7075 47.6119 90.2285C28.2466 104.75 39.7005 70.8647 39.7005 70.8647L27.2017 69.8902L27.2054 69.8828Z" fill="#FFDB00" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M54.7162 65.1585L57.5806 81.9175L62.6165 90.5138L66.2628 88.6018C66.2628 88.6018 61.9198 86.6899 61.138 66.459C60.3116 45.0795 54.7125 65.1548 54.7125 65.1548L54.7162 65.1585Z" fill="#FFDB00" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M74.1106 6.51866C74.1106 6.51866 69.8603 2.95417 66.5698 3.22836C63.2793 3.50255 53.2706 14.0589 53.2706 14.0589L51.881 38.6509L45.7816 53.5499L60.2963 80.6429L78.6388 42.1709L77.9533 26.8125L74.1143 6.51866H74.1106Z" fill="#FFDB00"/>
+<path d="M71.8168 87.1308C71.8168 87.1308 75.5038 85.8673 78.2682 88.2684C81.0325 90.6694 79.6503 93.0815 78.4794 93.793C77.3084 94.5044 68.0001 94.9749 67.1997 90.599C66.7142 87.9423 65.0949 80.2649 64.4353 72.3616" fill="#FFDB00"/>
+<path d="M71.8168 87.1308C71.8168 87.1308 75.5038 85.8673 78.2682 88.2684C81.0325 90.6694 79.6503 93.0815 78.4794 93.793C77.3084 94.5044 68.0001 94.9749 67.1997 90.599C66.7142 87.9423 65.0949 80.2649 64.4353 72.3616" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M77.1898 20.0689C77.1898 20.0689 85.1048 34.69 77.2194 51.6342C73.2656 60.1342 72.9432 71.3167 72.9432 71.3167C72.9432 71.3167 69.5637 68.245 69.5637 63.8135" fill="#FFDB00"/>
+<path d="M77.1898 20.0689C77.1898 20.0689 85.1048 34.69 77.2194 51.6342C73.2656 60.1342 72.9432 71.3167 72.9432 71.3167C72.9432 71.3167 69.5637 68.245 69.5637 63.8135" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M61.8225 76.4374C62.786 75.1332 63.6716 73.7659 64.4238 72.3579C65.7208 69.9236 66.6138 67.3669 66.7806 64.7954C66.7806 64.7954 65.3984 70.4719 67.1585 70.4719C68.9187 70.4719 70.4305 56.3437 73.9508 49.9446" fill="#FFDB00"/>
+<path d="M61.8225 76.4374C62.786 75.1332 63.6716 73.7659 64.4238 72.3579C65.7208 69.9236 66.6138 67.3669 66.7806 64.7954C66.7806 64.7954 65.3984 70.4719 67.1585 70.4719C68.9187 70.4719 70.4305 56.3437 73.9508 49.9446" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M49.1903 88.7315C49.1903 88.7315 52.5401 86.3712 56.3198 82.6771Z" fill="#FFDB00"/>
+<path d="M49.1903 88.7315C49.1903 88.7315 52.5401 86.3712 56.3198 82.6771" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M30.2295 88.9428C30.2295 88.9428 -5.9071 83.9 1.30392 38.9733C1.47438 37.9062 2.9529 37.8469 3.10482 38.9178C4.23132 46.8804 6.63252 58.7336 11.346 64.0544C18.7756 72.4321 4.0905 71.9096 9.11895 51.9344C13.5916 34.1639 16.4411 72.899 16.4411 72.899C16.4411 72.899 16.0446 60.6937 20.936 53.8278C25.831 46.9619 15.2183 71.6429 28.625 80.0946" fill="#FFDB00"/>
+<path d="M30.2295 88.9428C30.2295 88.9428 -5.9071 83.9 1.30392 38.9733C1.47438 37.9062 2.9529 37.8469 3.10482 38.9178C4.23132 46.8804 6.63252 58.7336 11.346 64.0544C18.7756 72.4321 4.0905 71.9096 9.11895 51.9344C13.5916 34.1639 16.4411 72.899 16.4411 72.899C16.4411 72.899 16.0446 60.6937 20.936 53.8278C25.831 46.9619 15.2183 71.6429 28.625 80.0946" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M63.1344 87.4051C63.1344 87.4051 66.8215 86.1416 69.5858 88.5426C72.3502 90.9436 70.968 93.3558 69.797 94.0672C68.6261 94.7786 59.3177 95.2492 58.5173 90.8732C57.7169 86.4936 50.454 64.0173 50.9246 52.3827" fill="#FFDB00"/>
+<path d="M63.1344 87.4051C63.1344 87.4051 66.8215 86.1416 69.5858 88.5426C72.3502 90.9436 70.968 93.3558 69.797 94.0672C68.6261 94.7786 59.3177 95.2492 58.5173 90.8732C57.7169 86.4936 50.454 64.0173 50.9246 52.3827" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M60.5444 65.6291C60.5444 65.6291 61.6783 81.7656 64.9948 87.268" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M71.3649 69.4752C71.3649 69.4752 70.357 81.4914 73.6772 86.9938" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M26.5616 66.385C26.5616 66.385 24.253 73.2694 23.9047 78.694C23.145 90.5175 31.0749 94.1858 33.7911 94.5711C36.5073 94.9565 59.7708 95.5456 60.2525 94.3784C61.2419 91.9885 59.1705 86.8864 51.3666 90.0025C51.3666 90.0025 50.4513 87.4496 43.5256 88.6464C43.5256 88.6464 59.0964 71.8651 45.4117 67.6744" fill="#FFDB00"/>
+<path d="M26.5616 66.385C26.5616 66.385 24.253 73.2694 23.9047 78.694C23.145 90.5175 31.0749 94.1858 33.7911 94.5711C36.5073 94.9565 59.7708 95.5456 60.2525 94.3784C61.2419 91.9885 59.1705 86.8864 51.3666 90.0025C51.3666 90.0025 50.4513 87.4496 43.5256 88.6464C43.5256 88.6464 59.0964 71.8651 45.4117 67.6744" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M54.3903 28.8431C54.3903 28.8431 34.699 37.8358 32.9796 47.5029C32.9796 47.5029 40.2499 43.2603 41.9471 43.9903C44.5187 45.0945 27.3657 51.8084 24.7533 57.4108C24.7533 57.4108 31.3899 55.6731 32.9982 56.5438C32.9982 56.5438 21.6517 68.5267 24.6088 69.7828C26.3319 70.5164 28.7442 63.0095 37.4189 63.0095" fill="#FFDB00"/>
+<path d="M54.3903 28.8431C54.3903 28.8431 34.699 37.8358 32.9796 47.5029C32.9796 47.5029 40.2499 43.2603 41.9471 43.9903C44.5187 45.0945 27.3657 51.8084 24.7533 57.4108C24.7533 57.4108 31.3899 55.6731 32.9982 56.5438C32.9982 56.5438 21.6517 68.5267 24.6088 69.7828C26.3319 70.5164 28.7442 63.0095 37.4189 63.0095" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M75.8349 6.5334C75.8349 6.5334 68.0532 -1.15137 62.0057 1.9092Z" fill="#FFDB00"/>
+<path d="M75.8349 6.5334C75.8349 6.5334 68.0532 -1.15137 62.0057 1.9092" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M55.8247 13.7661C55.3763 22.7255 48.7989 30.9957 48.7989 30.9957L48.3505 23.3961C48.3505 23.3961 43.0219 34.4675 40.832 28.8762C39.0273 24.2706 42.9367 16.8378 44.9822 19.4574C46.998 22.04 33.3949 25.0005 33.3949 25.0005C33.3949 25.0005 39.8129 21.3545 41.9214 12.4248C44.0299 3.49131 53.8496 0.386279 57.7293 0.352931C63.1098 0.304762 65.3924 3.65805 65.3924 3.65805" fill="#FFDB00"/>
+<path d="M55.8247 13.7661C55.3763 22.7255 48.7989 30.9957 48.7989 30.9957L48.3505 23.3961C48.3505 23.3961 43.0219 34.4675 40.832 28.8762C39.0273 24.2706 42.9367 16.8378 44.9822 19.4574C46.998 22.04 33.3949 25.0005 33.3949 25.0005C33.3949 25.0005 39.8129 21.3545 41.9214 12.4248C44.0299 3.49131 53.8496 0.386279 57.7293 0.352931C63.1098 0.304762 65.3924 3.65805 65.3924 3.65805" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M68.2135 8.90509C68.7419 8.32342 68.5427 7.28192 67.7686 6.57882C66.9945 5.87573 65.9386 5.7773 65.4102 6.35897C64.8818 6.94064 65.081 7.98214 65.8551 8.68523C66.6292 9.38832 67.6851 9.48676 68.2135 8.90509Z" fill="#FF8158"/>
+<path d="M74.3565 6.8269C74.7542 6.38913 74.6037 5.60482 74.0205 5.0751C73.4373 4.54537 72.6421 4.47082 72.2445 4.90859C71.8468 5.34635 71.9972 6.13066 72.5804 6.66039C73.1637 7.19011 73.9588 7.26466 74.3565 6.8269Z" fill="#FF8158"/>
+<path d="M71.5577 6.91872C71.5577 6.91872 85.6833 5.24393 88.0734 5.58853C90.4635 5.93312 91.1268 10.2127 90.0596 14.396C88.9924 18.5793 88.6441 21.0099 87.6362 20.7691C86.6283 20.5282 87.21 15.9189 85.9872 15.7114C84.7644 15.5002 83.9602 22.2179 82.667 21.9955C81.3738 21.7732 79.5766 17.5677 81.3256 13.0991" fill="#FFDB00"/>
+<path d="M71.5577 6.91872C71.5577 6.91872 85.6833 5.24393 88.0734 5.58853C90.4635 5.93312 91.1268 10.2127 90.0596 14.396C88.9924 18.5793 88.6441 21.0099 87.6362 20.7691C86.6283 20.5282 87.21 15.9189 85.9872 15.7114C84.7644 15.5002 83.9602 22.2179 82.667 21.9955C81.3738 21.7732 79.5766 17.5677 81.3256 13.0991" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M90.2708 8.51199C90.2708 8.51199 91.464 5.24022 88.4625 4.83635C85.461 4.43247 87.7066 9.46795 90.2708 8.51199Z" fill="#FFDB00" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M80.6219 17.7901C80.6219 17.7901 77.0238 22.4291 76.7533 23.9964C76.7533 23.9964 75.0895 21.2841 74.7338 18.1606C74.7338 18.1606 73.6295 18.7127 73.3331 23.7C73.0366 28.6873 68.149 21.3842 70.5391 15.2112" fill="#FFDB00"/>
+<path d="M80.6219 17.7901C80.6219 17.7901 77.0238 22.4291 76.7533 23.9964C76.7533 23.9964 75.0895 21.2841 74.7338 18.1606C74.7338 18.1606 73.6295 18.7127 73.3331 23.7C73.0366 28.6873 68.149 21.3842 70.5391 15.2112" stroke="#FF8158" stroke-width="0.704825" stroke-linecap="round" stroke-linejoin="round"/>
+<g opacity="0.7">
+<path d="M40.509 41.2335C40.509 41.2335 49.1208 33.3004 62.1569 30.1287" stroke="white" stroke-width="2.46689" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M44.4404 12.6546C44.4404 12.6546 46.1487 3.25797 59.2478 2.59473" stroke="white" stroke-width="2.46689" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M71.9918 9.10496L85.2503 7.71918" stroke="white" stroke-width="2.46689" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M32.972 53.6499C32.972 53.6499 39.8496 47.6992 48.6577 47.2361" stroke="white" stroke-width="2.46689" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M38.1225 65.9848C38.1225 65.9848 25.8497 68.786 27.4505 82.9291" stroke="white" stroke-width="2.46689" stroke-miterlimit="10" stroke-linecap="round"/>
+</g>
+</g>
+
+<g id="wheel">
+<path d="M46.0512 116.757C63.0078 116.757 76.7538 103.011 76.7538 86.054C76.7538 69.0974 63.0078 55.3514 46.0512 55.3514C29.0946 55.3514 15.3486 69.0974 15.3486 86.054C15.3486 103.011 29.0946 116.757 46.0512 116.757Z" stroke="#B1B1B1" stroke-width="7.69075" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M46.0539 121.756C65.7713 121.756 81.7555 105.771 81.7555 86.054C81.7555 66.3366 65.7713 50.3524 46.0539 50.3524C26.3364 50.3524 10.3523 66.3366 10.3523 86.054C10.3523 105.771 26.3364 121.756 46.0539 121.756Z" stroke="#1D1D1B" stroke-width="3.29604" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M78.5854 86.054C78.5854 104.017 64.0224 118.586 46.0535 118.586C28.0846 118.586 13.5216 104.023 13.5216 86.054C13.5216 68.0851 28.0846 53.5221 46.0535 53.5221" stroke="white" stroke-width="0.54934" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M19.3036 86.0759H72.7269" stroke="#1D1D1B" stroke-width="0.54934" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M46.0098 59.3615V112.785" stroke="#1D1D1B" stroke-width="0.54934" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M27.129 67.1841L64.9071 104.962" stroke="#1D1D1B" stroke-width="0.54934" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M64.9071 67.1841L27.129 104.962" stroke="#1D1D1B" stroke-width="0.54934" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M21.2222 76.1165L70.7946 96.0301" stroke="#1D1D1B" stroke-width="0.54934" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M55.9663 61.2898L36.0527 110.862" stroke="#1D1D1B" stroke-width="0.54934" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M35.5214 61.5095L56.4951 110.642" stroke="#1D1D1B" stroke-width="0.54934" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M70.5742 75.5891L21.4413 96.5629" stroke="#1D1D1B" stroke-width="0.54934" stroke-miterlimit="10" stroke-linecap="round"/>
+</g>
+</defs>
+</svg>
+<div class="controls">
+  <label>Délka osy:
+    <select id="axis-length">
+      <option value="10" selected>10 m</option>
+      <option value="20">20 m</option>
+      <option value="30">30 m</option>
+      <option value="40">40 m</option>
+      <option value="50">50 m</option>
+      <option value="60">60 m</option>
+      <option value="70">70 m</option>
+      <option value="80">80 m</option>
+      <option value="90">90 m</option>
+      <option value="100">100 m</option>
+    </select>
+  </label>
+  <label><span id="time1-label">Pes 1 – čas na 10 m:</span> <input type="text" id="time1" inputmode="decimal" value="10"> s</label>
+  <label><span id="time2-label">Pes 2 – čas na 10 m:</span> <input type="text" id="time2" inputmode="decimal" value="5"> s</label>
+  <button type="button" id="start-btn">Start</button>
+  <a class="variant-link" href="pes.html">Plná osa (popisky po metrech)</a>
+</div>
+<script>
+  const AXIS_X = 24;
+  const AXIS_LEN = 952;
+  const WHEEL_CX = 46.0539;
+  const WHEEL_CY = 86.054;
+  const WHEEL_RADIUS = 35.7;
+  const START_X = AXIS_X - WHEEL_CX;
+  const END_X = AXIS_X + AXIS_LEN - WHEEL_CX;
+  const axisTracks = { axis1: null, axis2: null };
+  let axisLengthM = 10;
+
+  function getWheelDeg() {
+    return (AXIS_LEN / (2 * Math.PI * WHEEL_RADIUS)) * 360 * (axisLengthM / 10);
+  }
+
+  function getTotalDuration(timeForAxis) {
+    return timeForAxis;
+  }
+
+  function updateTimeLabels() {
+    document.getElementById('time1-label').textContent = `Pes 1 – čas na ${axisLengthM} m:`;
+    document.getElementById('time2-label').textContent = `Pes 2 – čas na ${axisLengthM} m:`;
+  }
+
+  function formatValue(sec) {
+    const s = Math.round(sec * 100) / 100;
+    const str = s.toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
+    return str;
+  }
+
+  function formatElapsed(sec) {
+    return formatValue(sec) + ' s';
+  }
+
+  function formatDistance(meters) {
+    return formatValue(meters) + ' m';
+  }
+
+  function axisIdForDog(mover) {
+    return mover.id === 'dog1' ? 'axis1' : 'axis2';
+  }
+
+  function clearSecondMarks(axisId) {
+    document.getElementById(axisId).querySelectorAll('.sec-mark').forEach((n) => n.remove());
+  }
+
+  function resetAxisTimes(axisId) {
+    if (axisTracks[axisId]) {
+      cancelAnimationFrame(axisTracks[axisId]);
+      axisTracks[axisId] = null;
+    }
+    clearSecondMarks(axisId);
+  }
+
+  function createSecondMark(axis, sec, durationSec) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const ratio = sec / durationSec;
+    const x = ratio * AXIS_LEN;
+    const dist = axisLengthM * ratio;
+
+    const g = document.createElementNS(ns, 'g');
+    g.setAttribute('class', 'sec-mark pending');
+    g.dataset.at = String(sec);
+
+    const tick = document.createElementNS(ns, 'line');
+    tick.setAttribute('class', 'axis-tick');
+    tick.setAttribute('x1', x);
+    tick.setAttribute('y1', -5);
+    tick.setAttribute('x2', x);
+    tick.setAttribute('y2', 5);
+    g.appendChild(tick);
+
+    const timeText = document.createElementNS(ns, 'text');
+    timeText.setAttribute('class', 'sec-mark-time');
+    timeText.setAttribute('x', x);
+    timeText.setAttribute('y', -10);
+    timeText.setAttribute('text-anchor', 'middle');
+    timeText.textContent = formatElapsed(sec);
+    g.appendChild(timeText);
+
+    const distText = document.createElementNS(ns, 'text');
+    distText.setAttribute('class', 'sec-mark-dist');
+    distText.setAttribute('x', x);
+    distText.setAttribute('y', 34);
+    distText.setAttribute('text-anchor', 'middle');
+    distText.textContent = formatDistance(dist);
+    g.appendChild(distText);
+
+    axis.appendChild(g);
+    return g;
+  }
+
+  function prepareSecondMarks(axisId, durationSec) {
+    clearSecondMarks(axisId);
+    const axis = document.getElementById(axisId);
+
+    const startMark = createSecondMark(axis, 0, durationSec);
+    startMark.classList.remove('pending');
+    startMark.classList.add('is-visible');
+    startMark.querySelector('.sec-mark-time').setAttribute('text-anchor', 'start');
+    startMark.querySelector('.sec-mark-dist').setAttribute('text-anchor', 'start');
+
+    for (let sec = 1; sec <= Math.floor(durationSec); sec++) {
+      const mark = createSecondMark(axis, sec, durationSec);
+      if (sec === Math.floor(durationSec) && sec === durationSec) {
+        mark.querySelector('.sec-mark-time').setAttribute('text-anchor', 'end');
+        mark.querySelector('.sec-mark-dist').setAttribute('text-anchor', 'end');
+      }
+    }
+  }
+
+  function trackSecondMarks(axisId, durationSec) {
+    prepareSecondMarks(axisId, durationSec);
+    const axis = document.getElementById(axisId);
+    const pending = () => [...axis.querySelectorAll('.sec-mark.pending')];
+
+    const start = performance.now();
+    function frame(now) {
+      const elapsed = (now - start) / 1000;
+      pending().forEach((g) => {
+        if (elapsed >= Number(g.dataset.at) - 0.02) {
+          g.classList.remove('pending');
+          g.classList.add('is-visible');
+        }
+      });
+      if (elapsed < durationSec) {
+        axisTracks[axisId] = requestAnimationFrame(frame);
+      } else {
+        pending().forEach((g) => {
+          g.classList.remove('pending');
+          g.classList.add('is-visible');
+        });
+      }
+    }
+    axisTracks[axisId] = requestAnimationFrame(frame);
+  }
+
+  function buildAxis(container) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('class', 'axis-line');
+    line.setAttribute('x1', '0');
+    line.setAttribute('y1', '0');
+    line.setAttribute('x2', AXIS_LEN);
+    line.setAttribute('y2', '0');
+    container.appendChild(line);
+
+    [0, axisLengthM].forEach((m) => {
+      const x = (m / axisLengthM) * AXIS_LEN;
+
+      const label = document.createElementNS(ns, 'text');
+      label.setAttribute('class', 'axis-label');
+      label.setAttribute('x', x);
+      label.setAttribute('y', '20');
+      if (m === 0) label.setAttribute('text-anchor', 'start');
+      else if (m === axisLengthM) label.setAttribute('text-anchor', 'end');
+      else label.setAttribute('text-anchor', 'middle');
+      label.textContent = m + ' m';
+      container.appendChild(label);
+    });
+  }
+
+  function rebuildAxes() {
+    ['axis1', 'axis2'].forEach((id) => {
+      const axis = document.getElementById(id);
+      axis.innerHTML = '';
+      buildAxis(axis);
+    });
+  }
+
+  rebuildAxes();
+
+  function clearAnimations(el) {
+    el.querySelectorAll('animateTransform').forEach((n) => n.remove());
+  }
+
+  function resetDog(mover) {
+    const y = mover.id === 'dog1' ? 35 : 275;
+    clearAnimations(mover);
+    clearAnimations(mover.querySelector('.wheel-spinner'));
+    resetAxisTimes(axisIdForDog(mover));
+    mover.setAttribute('transform', `translate(${START_X}, ${y})`);
+    mover.querySelector('.wheel-spinner').setAttribute(
+      'transform',
+      `rotate(0 ${WHEEL_CX} ${WHEEL_CY})`
+    );
+  }
+
+  function addAnim(parent, attrs) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const anim = document.createElementNS(ns, 'animateTransform');
+    Object.entries(attrs).forEach(([k, v]) => anim.setAttribute(k, v));
+    parent.appendChild(anim);
+    return anim;
+  }
+
+  function readDuration(input) {
+    const v = parseFloat(String(input.value).replace(',', '.'));
+    const sec = Math.max(0.1, isNaN(v) ? 0.1 : v);
+    input.value = sec;
+    return sec;
+  }
+
+  function runDog(mover, timeInput) {
+    const y = mover.id === 'dog1' ? 35 : 275;
+    const duration = getTotalDuration(readDuration(timeInput));
+    const wheelDeg = getWheelDeg();
+    const wheel = mover.querySelector('.wheel-spinner');
+
+    const moveAnim = addAnim(mover, {
+      attributeName: 'transform',
+      type: 'translate',
+      from: `${START_X} ${y}`,
+      to: `${END_X} ${y}`,
+      dur: `${duration}s`,
+      fill: 'freeze'
+    });
+
+    const wheelAnim = addAnim(wheel, {
+      attributeName: 'transform',
+      type: 'rotate',
+      from: `0 ${WHEEL_CX} ${WHEEL_CY}`,
+      to: `${wheelDeg} ${WHEEL_CX} ${WHEEL_CY}`,
+      dur: `${duration}s`,
+      fill: 'freeze'
+    });
+
+    moveAnim.beginElement();
+    wheelAnim.beginElement();
+    trackSecondMarks(axisIdForDog(mover), duration);
+
+    return new Promise((resolve) => {
+      let n = 0;
+      const done = () => { if (++n === 2) resolve(); };
+      moveAnim.addEventListener('endEvent', done, { once: true });
+      wheelAnim.addEventListener('endEvent', done, { once: true });
+    });
+  }
+
+  document.getElementById('start-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('start-btn');
+    const lanes = [
+      { mover: document.getElementById('dog1'), input: document.getElementById('time1') },
+      { mover: document.getElementById('dog2'), input: document.getElementById('time2') }
+    ];
+
+    btn.disabled = true;
+    lanes.forEach(({ mover }) => resetDog(mover));
+    await Promise.all(lanes.map(({ mover, input }) => runDog(mover, input)));
+    btn.disabled = false;
+  });
+
+  [document.getElementById('time1'), document.getElementById('time2')].forEach((input) => {
+    input.addEventListener('change', () => readDuration(input));
+  });
+
+  document.getElementById('axis-length').addEventListener('change', (e) => {
+    axisLengthM = Number(e.target.value);
+    updateTimeLabels();
+    [
+      { mover: document.getElementById('dog1'), input: document.getElementById('time1') },
+      { mover: document.getElementById('dog2'), input: document.getElementById('time2') }
+    ].forEach(({ mover }) => resetDog(mover));
+    rebuildAxes();
+  });
+
+  updateTimeLabels();
+</script>
+</body>
+</html>

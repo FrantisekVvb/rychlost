@@ -75,7 +75,8 @@
     }
 
     .track-section {
-      flex: 0 0 auto;
+      flex: 1 1 0;
+      min-height: 0;
       background: var(--panel);
       border-radius: 14px;
       padding: 10px 14px 6px;
@@ -88,9 +89,9 @@
     .track-section > .track-svg {
       display: block;
       width: 100%;
-      flex: 0 0 auto;
-      height: auto;
-      aspect-ratio: 648 / 220;
+      flex: 1 1 auto;
+      min-height: 0;
+      height: 100%;
       max-width: 100%;
       user-select: none;
     }
@@ -102,13 +103,90 @@
 
     .chart-wrap {
       flex: 1 1 0;
-      min-height: min(240px, 42vh);
+      min-height: 0;
       display: flex;
       flex-direction: column;
       background: var(--panel);
       border-radius: 14px;
-      padding: clamp(12px, 1.4vw, 18px) clamp(12px, 1.4vw, 18px) 8px;
+      padding: clamp(12px, 1.4vw, 18px) clamp(10px, 1.2vw, 14px) 8px;
       border: 1px solid var(--border);
+    }
+
+    .chart-stage {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .chart-plot {
+      position: relative;
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+    }
+
+    .chart-plot .chart-svg {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .chart-confetti-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .chart-tools {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: flex-start;
+      padding-top: 2px;
+    }
+
+    .chart-zoom-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel-bg);
+      color: var(--accent);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .chart-zoom-btn:hover {
+      border-color: var(--accent);
+      background: var(--readout-bg);
+    }
+
+    .chart-zoom-btn .chart-zoom-icon--out {
+      display: none;
+    }
+
+    .chart-zoom-btn[aria-pressed="true"] .chart-zoom-icon--in {
+      display: none;
+    }
+
+    .chart-zoom-btn[aria-pressed="true"] .chart-zoom-icon--out {
+      display: block;
+    }
+
+    .viz-column.is-chart-expanded .track-section {
+      display: none;
+    }
+
+    .viz-column.is-chart-expanded .chart-wrap {
+      flex: 1 1 auto;
     }
 
     .chart-svg {
@@ -678,13 +756,10 @@
         width: 100%;
       }
 
-      .chart-wrap {
-        flex: 1 1 55%;
-        min-height: 200px;
-      }
-
+      .chart-wrap,
       .track-section {
-        flex: 0 0 auto;
+        flex: 1 1 0;
+        min-height: 0;
       }
 
       .setup-panel {
@@ -845,8 +920,28 @@
 </defs>
 </svg>
       </div>
-      <div class="chart-wrap">
-        <svg id="chart" class="chart-svg" viewBox="0 0 648 340" aria-label="Graf vzdálenost–čas"></svg>
+      <div class="chart-wrap" id="chart-wrap">
+        <div class="chart-stage" id="chart-stage">
+          <div class="chart-plot" id="chart-plot">
+            <svg id="chart" class="chart-svg" viewBox="0 0 648 340" aria-label="Graf vzdálenost–čas"></svg>
+            <canvas id="chart-confetti" class="chart-confetti-canvas" aria-hidden="true"></canvas>
+          </div>
+          <div class="chart-tools">
+            <button type="button" id="chart-fullscreen-btn" class="chart-zoom-btn" aria-label="Zvětšit graf" aria-pressed="false">
+              <svg class="chart-zoom-icon chart-zoom-icon--in" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="M20 20l-4-4"></path>
+                <path d="M11 8v6"></path>
+                <path d="M8 11h6"></path>
+              </svg>
+              <svg class="chart-zoom-icon chart-zoom-icon--out" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="M20 20l-4-4"></path>
+                <path d="M8 11h6"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -998,6 +1093,9 @@
   }
 
   const chartEl = document.getElementById('chart');
+  const vizColumn = document.querySelector('.viz-column');
+  const chartFullscreenBtn = document.getElementById('chart-fullscreen-btn');
+  let chartFullscreenOpen = false;
   const axisTrack = { raf: null };
   let axisLengthM = 10;
   let chartProgressGroup = null;
@@ -1512,6 +1610,86 @@
     el.classList.remove('is-ok', 'is-error');
   }
 
+  let chartConfettiRaf = null;
+
+  function launchChartConfetti() {
+    const canvas = document.getElementById('chart-confetti');
+    const plot = document.getElementById('chart-plot');
+    if (!canvas || !plot) return;
+
+    if (chartConfettiRaf) {
+      cancelAnimationFrame(chartConfettiRaf);
+      chartConfettiRaf = null;
+    }
+
+    const w = plot.clientWidth;
+    const h = plot.clientHeight;
+    if (w <= 0 || h <= 0) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const colors = ['#1f7a3f', '#2ecc71', '#27ae60', '#58d68d', '#abebc6', '#145a32'];
+    const cx = w / 2;
+    const cy = h / 2;
+    const particles = Array.from({ length: 110 }, () => {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2.5 + Math.random() * 6;
+      return {
+        x: cx,
+        y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 2.5,
+        w: 4 + Math.random() * 6,
+        h: 3 + Math.random() * 5,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.32,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        life: 1,
+        decay: 0.011 + Math.random() * 0.012,
+      };
+    });
+
+    const start = performance.now();
+    const duration = 2500;
+
+    function frame(now) {
+      const elapsed = now - start;
+      ctx.clearRect(0, 0, w, h);
+      let alive = false;
+      for (const p of particles) {
+        if (p.life <= 0) continue;
+        alive = true;
+        p.vy += 0.13;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        p.life -= p.decay;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+      if (alive && elapsed < duration) {
+        chartConfettiRaf = requestAnimationFrame(frame);
+      } else {
+        ctx.clearRect(0, 0, w, h);
+        chartConfettiRaf = null;
+      }
+    }
+
+    chartConfettiRaf = requestAnimationFrame(frame);
+  }
+
   function showGraphVerifyMessage(text, ok) {
     const el = document.getElementById('graph-verify-message');
     if (!el) return;
@@ -1519,6 +1697,7 @@
     el.textContent = text;
     el.classList.toggle('is-ok', ok);
     el.classList.toggle('is-error', !ok);
+    if (ok) launchChartConfetti();
   }
 
   function expectedDistanceAt(t, duration) {
@@ -1557,12 +1736,8 @@
   }
 
   function verifyUserChart() {
-    if (!createGraphMode) return;
+    if (!createGraphMode || !userChartShowFit || userChartPoints.length < 2) return;
     clearGraphVerifyMessage();
-    if (userChartPoints.length < 2) {
-      showGraphVerifyMessage('Pro ověření vlož alespoň dva body.', false);
-      return;
-    }
 
     const duration = chartDuration();
     const sorted = userChartPointsSortedForCurve(userChartPoints);
@@ -1576,25 +1751,15 @@
     }
 
     let maxErr = 0;
-    if (userChartShowFit) {
-      const samples = 30;
-      for (let i = 0; i <= samples; i++) {
-        const t = (i / samples) * duration;
-        const actual = userChartDistanceAt(t);
-        if (actual == null) {
-          showGraphVerifyMessage('Graf se nepodařilo vyhodnotit.', false);
-          return;
-        }
-        maxErr = Math.max(maxErr, Math.abs(actual - expectedDistanceAt(t, duration)));
-      }
-    } else {
-      for (const p of userChartPoints) {
-        maxErr = Math.max(maxErr, Math.abs(p.s - expectedDistanceAt(p.t, duration)));
-      }
-      if (motionMode === 'decelerated' && userChartPoints.length < 4) {
-        showGraphVerifyMessage('U zpomaleného pohybu zapni Proložit a ověř znovu.', false);
+    const samples = 30;
+    for (let i = 0; i <= samples; i++) {
+      const t = (i / samples) * duration;
+      const actual = userChartDistanceAt(t);
+      if (actual == null) {
+        showGraphVerifyMessage('Graf se nepodařilo vyhodnotit.', false);
         return;
       }
+      maxErr = Math.max(maxErr, Math.abs(actual - expectedDistanceAt(t, duration)));
     }
 
     if (maxErr <= tolerance) {
@@ -1615,7 +1780,7 @@
     if (!canFit) userChartShowFit = false;
     fitBtn.classList.toggle('is-active', userChartShowFit && canFit);
     fitBtn.setAttribute('aria-pressed', String(userChartShowFit && canFit));
-    if (verifyBtn) verifyBtn.disabled = !canFit;
+    if (verifyBtn) verifyBtn.disabled = !(userChartShowFit && canFit);
     if (clearBtn) clearBtn.disabled = !hasPoints;
   }
 
@@ -1788,6 +1953,13 @@
     persistPanelSettings();
   }
 
+  function setChartFullscreen(open) {
+    chartFullscreenOpen = open;
+    vizColumn.classList.toggle('is-chart-expanded', open);
+    chartFullscreenBtn.setAttribute('aria-pressed', String(open));
+    chartFullscreenBtn.setAttribute('aria-label', open ? 'Zavřít zvětšený graf' : 'Zvětšit graf');
+  }
+
   function redrawChart() {
     chartEl.innerHTML = '';
     buildChartDefs(chartEl);
@@ -1827,6 +1999,25 @@
     updateChartProgress(0, 1);
   }
 
+  function applySecondMarkDistOffsets() {
+    if (motionMode !== 'decelerated') return;
+    const marks = [...document.getElementById('axis').querySelectorAll('.sec-mark')];
+    const overlapX = 36;
+    const baseY = 20;
+
+    marks.forEach((mark, i) => {
+      const x = Number(mark.dataset.x);
+      let y = baseY;
+      for (let j = 0; j < i; j++) {
+        const prevX = Number(marks[j].dataset.x);
+        if (Math.abs(x - prevX) >= overlapX) continue;
+        const prevY = Number(marks[j].querySelector('.sec-mark-dist').getAttribute('y'));
+        y = Math.max(y, prevY + 10);
+      }
+      mark.querySelector('.sec-mark-dist').setAttribute('y', String(y));
+    });
+  }
+
   function createSecondMark(axis, sec, durationSec) {
     const ratio = motionFraction(sec / durationSec);
     const x = ratio * TRACK_LEN;
@@ -1836,6 +2027,7 @@
     g.setAttribute('class', 'sec-mark pending');
     g.dataset.at = String(sec);
     g.dataset.dist = String(dist);
+    g.dataset.x = String(x);
 
     const tick = document.createElementNS(NS, 'line');
     tick.setAttribute('class', 'axis-tick');
@@ -1887,6 +2079,8 @@
         mark.querySelector('.sec-mark-dist').setAttribute('text-anchor', 'end');
       }
     });
+
+    applySecondMarkDistOffsets();
   }
 
   function buildAxis(container) {
@@ -2220,6 +2414,11 @@
 
   chartEl.addEventListener('pointerdown', onUserChartPointerDown);
   chartEl.addEventListener('dblclick', onUserChartDblClick);
+
+  chartFullscreenBtn.addEventListener('click', () => setChartFullscreen(!chartFullscreenOpen));
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && chartFullscreenOpen) setChartFullscreen(false);
+  });
 
   restorePanelSettings();
   applyDefaultTrackSettings();

@@ -26,6 +26,7 @@ jobs:
           exclude_assets: '.github'
 
       - name: Enable GitHub Pages
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -56,6 +57,5 @@ jobs:
           if [ "${code}" -ge 200 ] && [ "${code}" -lt 300 ]; then
             echo "GitHub Pages enabled."
           else
-            echo "Could not enable GitHub Pages automatically (HTTP ${code})."
-            exit 1
+            echo "Pages already configured or cannot be changed from workflow (HTTP ${code})."
           fi

@@ -25,6 +25,7 @@
       --focus: #3d5a9a;
       --area-muted: #eceff5;
       --readout-bg: #f4f5f8;
+      --danger: #c0392b;
       --time: #d35400;
       --axis: #1e6bb8;
       --grid: rgba(30, 107, 184, 0.22);
@@ -126,7 +127,7 @@
     }
 
     .setup-panel {
-      flex: 0 0 min(220px, 100%);
+      flex: 0 0 min(248px, 100%);
       align-self: stretch;
       overflow: auto;
       padding: 14px;
@@ -136,6 +137,7 @@
       border: 1px solid var(--border);
       background: var(--panel-bg);
       color: var(--text);
+      min-width: 0;
     }
 
     .panel-title {
@@ -155,6 +157,21 @@
       gap: 8px;
     }
 
+    .row-pair {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .row-pair .step-input {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .app.is-create-graph .row-pair {
+      display: none;
+    }
+
     .row-label,
     label.row-label {
       font-weight: 650;
@@ -165,29 +182,164 @@
     }
 
     .actions-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .actions-row button {
-      flex: 1 1 auto;
-      min-width: min(100%, 7rem);
-    }
-
-    .field-inline {
-      display: flex;
-      align-items: center;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
     }
 
-    .field-unit {
-      font-weight: 600;
-      color: var(--muted);
-      font-size: 0.9rem;
+    .actions-row button {
+      width: 100%;
+      min-width: 0;
+      padding-inline: 10px;
     }
 
-    .setup-panel input[type="text"],
+    .create-graph-btn {
+      width: 100%;
+    }
+
+    .graph-tools-row {
+      display: none;
+    }
+
+    .app.is-create-graph .graph-tools-row {
+      display: grid;
+    }
+
+    .chart-svg.is-create-graph {
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .chart-svg.is-create-graph.is-holding-point {
+      cursor: grabbing;
+    }
+
+    .chart-cross-marker {
+      cursor: grab;
+    }
+
+    .chart-cross-marker line {
+      stroke: #FF8158;
+    }
+
+    .user-fitted-curve {
+      fill: none;
+      stroke: #1e6bb8;
+      stroke-width: 2.5;
+      pointer-events: none;
+    }
+
+    #fit-curve-btn.is-active {
+      border-color: var(--accent);
+      background: var(--readout-bg);
+      color: var(--accent);
+    }
+
+    #create-graph-btn.is-active {
+      border-color: var(--accent);
+      background: var(--readout-bg);
+      color: var(--accent);
+    }
+
+    .step-input {
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      min-width: 0;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-bg);
+      overflow: hidden;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .step-input:focus-within {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus) 22%, transparent);
+    }
+
+    .step-input input[type="text"] {
+      flex: 0 0 auto;
+      width: 2.5ch;
+      padding: 10px 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 0.95rem;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+    }
+
+    .step-value {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      padding-right: 0.775rem;
+      gap: 0.25em;
+    }
+
+    .step-input .field-unit {
+      flex-shrink: 0;
+      font-weight: 400;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .step-spin {
+      position: static;
+      flex-shrink: 0;
+      width: 1.55rem;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .step-btn {
+      flex: 1 1 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: var(--readout-bg);
+      color: var(--muted);
+      padding: 0;
+      font-size: 0.62rem;
+      line-height: 1;
+      cursor: pointer;
+      min-height: 0;
+      border-radius: 0;
+      font-weight: 400;
+    }
+
+    .step-btn:hover:not(:disabled) {
+      background: var(--area-muted);
+      color: var(--text);
+      border-color: transparent;
+    }
+
+    .step-btn:active:not(:disabled) {
+      transform: none;
+      background: var(--border);
+    }
+
+    .step-btn + .step-btn {
+      border-top: 1px solid var(--border);
+    }
+
+    .step-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .step-input input[type="text"]:focus {
+      outline: none;
+    }
+
     .setup-panel select {
       width: 100%;
       padding: 10px 12px;
@@ -199,13 +351,6 @@
       transition: border-color 0.15s, box-shadow 0.15s;
     }
 
-    .field-inline input[type="text"] {
-      width: 5.5rem;
-      text-align: center;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .setup-panel input[type="text"]:focus,
     .setup-panel select:focus {
       outline: none;
       border-color: var(--focus);
@@ -252,22 +397,23 @@
 
     .variant-toggle {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
     }
 
     .variant-btn {
       display: block;
       width: 100%;
-      padding: 10px 12px;
+      min-width: 0;
+      padding: 9px 8px;
       border-radius: 10px;
       border: 1px solid var(--border);
       background: var(--panel-bg);
       color: var(--text);
       font: inherit;
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       font-weight: 700;
-      line-height: 1.35;
+      line-height: 1.25;
       text-align: center;
       text-decoration: none;
       cursor: pointer;
@@ -306,6 +452,12 @@
       font-size: 12px;
       fill: var(--muted);
     }
+    .app.is-create-graph .axis-label {
+      visibility: hidden;
+    }
+    .app.is-create-graph .axis-label.is-visible {
+      visibility: visible;
+    }
     .axis-time {
       font-family: "Fenomen Sans", ui-sans-serif, system-ui, sans-serif;
       font-size: 12px;
@@ -316,6 +468,175 @@
     }
     .axis-time.is-visible {
       visibility: visible;
+    }
+
+    .table-keypad-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.42);
+    }
+
+    .table-keypad-overlay[hidden] {
+      display: none !important;
+    }
+
+    .table-keypad-panel {
+      width: min(100%, 300px);
+      padding: 16px;
+      border-radius: 16px;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      box-shadow: 0 14px 42px rgba(15, 23, 42, 0.22);
+      display: grid;
+      gap: 12px;
+    }
+
+    .table-keypad-panel__title {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 650;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .table-keypad-panel__display {
+      box-sizing: border-box;
+      height: 64px;
+      min-height: 64px;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: var(--readout-bg);
+      font-size: 1.5rem;
+      font-weight: 650;
+      line-height: 1.2;
+      text-align: center;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .table-keypad-panel__display.is-invalid {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .table-keypad-panel__error {
+      margin: 0;
+      font-size: 0.85rem;
+      font-weight: 650;
+      color: var(--danger);
+      text-align: center;
+    }
+
+    .table-keypad-panel__error[hidden] {
+      display: none !important;
+    }
+
+    .table-keypad-panel__actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .table-keypad-panel__action {
+      appearance: none;
+      -webkit-appearance: none;
+      box-sizing: border-box;
+      width: 56px;
+      height: 56px;
+      margin: 0;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .table-keypad-panel__action svg {
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .table-keypad-panel__confirm {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(61, 90, 154, 0.35);
+    }
+
+    .table-keypad-panel__cancel {
+      background: var(--readout-bg);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+    }
+
+    .table-keypad-panel__action:hover {
+      filter: brightness(1.05);
+    }
+
+    .table-keypad-panel__cancel:hover {
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    .table-keypad-panel__action:active {
+      transform: scale(0.97);
+    }
+
+    .table-math-keypad {
+      width: 100%;
+    }
+
+    .table-math-keypad__grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .table-math-keypad__key {
+      min-height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--readout-bg);
+      color: var(--text);
+      font: inherit;
+      font-size: 1.125rem;
+      font-weight: 650;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .table-math-keypad__key svg {
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .table-math-keypad__key:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--area-muted);
+    }
+
+    .table-math-keypad__key:active:not(:disabled) {
+      background: rgba(61, 90, 154, 0.12);
+    }
+
+    .table-math-keypad__key:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
 
     @media (max-width: 899.98px) {
@@ -371,21 +692,40 @@
             <button type="button" id="start-btn">Spustit</button>
             <button type="button" id="reset-btn" class="secondary">Reset</button>
           </div>
+          <button type="button" id="create-graph-btn" class="secondary create-graph-btn" aria-pressed="false">Vytvořit graf</button>
         </div>
 
-        <div class="row">
-          <label class="row-label" for="axis-length">Délka osy</label>
-          <select id="axis-length">
-            <option value="10" selected>10 m</option>
-            <option value="20">20 m</option>
-          </select>
+        <div class="row graph-tools-row" id="graph-tools-row" hidden>
+          <button type="button" id="fit-curve-btn" class="secondary" disabled aria-pressed="false">Proložit</button>
         </div>
 
-        <div class="row">
-          <label class="row-label" for="time" id="time-label">Čas na 10 m</label>
-          <div class="field-inline">
-            <input type="text" id="time" inputmode="decimal" value="10">
-            <span class="field-unit">s</span>
+        <div class="row-pair">
+          <div class="row">
+            <label class="row-label" for="axis-length">Dráha</label>
+            <div class="step-input">
+              <div class="step-value">
+                <input type="text" id="axis-length" inputmode="numeric" value="10">
+                <span class="field-unit">m</span>
+              </div>
+              <span class="step-spin">
+                <button type="button" class="step-btn step-up" aria-label="Zvětšit dráhu o 1 m">▲</button>
+                <button type="button" class="step-btn step-down" aria-label="Zmenšit dráhu o 1 m">▼</button>
+              </span>
+            </div>
+          </div>
+
+          <div class="row">
+            <label class="row-label" for="time" id="time-label">Čas</label>
+            <div class="step-input">
+              <div class="step-value">
+                <input type="text" id="time" inputmode="decimal" value="10">
+                <span class="field-unit">s</span>
+              </div>
+              <span class="step-spin">
+                <button type="button" class="step-btn step-up" aria-label="Zvětšit čas o 1 s">▲</button>
+                <button type="button" class="step-btn step-down" aria-label="Zmenšit čas o 1 s">▼</button>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -401,7 +741,7 @@
           <span class="row-label">Měřit po</span>
           <div class="variant-toggle" role="group" aria-label="Měřit po">
             <span class="variant-btn is-active" aria-current="true">metrech</span>
-            <a class="variant-btn" href="pes-jednoducha-osa.html">sekundách</a>
+            <a class="variant-btn" href="pes-jednoducha-osa.html" data-measure-link>sekundách</a>
           </div>
         </div>
       </div>
@@ -486,6 +826,47 @@
       </div>
     </div>
   </div>
+
+<div id="valueKeypadOverlay" class="table-keypad-overlay" hidden>
+  <div class="table-keypad-panel" role="dialog" aria-modal="true" aria-labelledby="valueKeypadTitle">
+    <p id="valueKeypadTitle" class="table-keypad-panel__title">Hodnota</p>
+    <div id="valueKeypadDisplay" class="table-keypad-panel__display" aria-live="polite"></div>
+    <p id="valueKeypadError" class="table-keypad-panel__error" hidden></p>
+    <div class="table-math-keypad" id="valueMathKeypad" aria-label="Matematická klávesnice">
+      <div class="table-math-keypad__grid">
+        <button class="table-math-keypad__key" type="button" data-value="7">7</button>
+        <button class="table-math-keypad__key" type="button" data-value="8">8</button>
+        <button class="table-math-keypad__key" type="button" data-value="9">9</button>
+        <button class="table-math-keypad__key" type="button" data-value="4">4</button>
+        <button class="table-math-keypad__key" type="button" data-value="5">5</button>
+        <button class="table-math-keypad__key" type="button" data-value="6">6</button>
+        <button class="table-math-keypad__key" type="button" data-value="1">1</button>
+        <button class="table-math-keypad__key" type="button" data-value="2">2</button>
+        <button class="table-math-keypad__key" type="button" data-value="3">3</button>
+        <button class="table-math-keypad__key" type="button" data-value=",">,</button>
+        <button class="table-math-keypad__key" type="button" data-value="0">0</button>
+        <button class="table-math-keypad__key" type="button" data-action="clear" aria-label="Smazat vše">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="table-keypad-panel__actions">
+      <button type="button" id="valueKeypadCancel" class="table-keypad-panel__action table-keypad-panel__cancel" aria-label="Zavřít bez uložení">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button type="button" id="valueKeypadConfirm" class="table-keypad-panel__action table-keypad-panel__confirm" aria-label="Vložit hodnotu">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M5 12.5l5 5L19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
   const NS = 'http://www.w3.org/2000/svg';
   const TW = 648;
@@ -508,7 +889,89 @@
   const AXIS_COLOR = '#1e6bb8';
   const GRAPH_COLOR = '#FF8158';
   const CHART_DIST_MAX = 20;
+  const AXIS_LENGTH_MIN = 1;
+  const AXIS_LENGTH_MAX = CHART_DIST_MAX;
+  const CHART_TIME_MIN = 1;
   const CHART_TIME_MAX = 10;
+  const CHART_CROSS_HALF = 7;
+  const SETTINGS_STORAGE_KEY = 'rychlost-panel-settings';
+  let pendingCreateGraphRestore = null;
+
+  function persistPanelSettings() {
+    const data = {
+      motion: motionMode,
+      createGraphMode,
+    };
+    if (createGraphMode) {
+      data.axisLength = readAxisLength(axisLengthInput);
+      data.chartTime = readDuration(timeInput);
+      data.userChartPoints = userChartPoints;
+      data.userChartShowFit = userChartShowFit;
+    }
+    sessionStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function restorePanelSettings() {
+    try {
+      const raw = sessionStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.motion === 'uniform' || data.motion === 'decelerated') motionMode = data.motion;
+      if (data.createGraphMode) {
+        pendingCreateGraphRestore = {
+          axisLength: data.axisLength,
+          chartTime: data.chartTime,
+          userChartPoints: data.userChartPoints,
+          userChartShowFit: data.userChartShowFit,
+        };
+      }
+    } catch (_) { /* ignore */ }
+  }
+
+  function applyRestoredCreateGraphMode() {
+    if (!pendingCreateGraphRestore) return;
+    const restored = pendingCreateGraphRestore;
+    pendingCreateGraphRestore = null;
+
+    axisLengthInput.value = Math.min(
+      AXIS_LENGTH_MAX,
+      Math.max(AXIS_LENGTH_MIN, Math.round(Number(restored.axisLength)) || 10)
+    );
+    timeInput.value = Math.min(
+      CHART_TIME_MAX,
+      Math.max(CHART_TIME_MIN, Math.round(Number(restored.chartTime)) || 10)
+    );
+    axisLengthM = readAxisLength(axisLengthInput);
+    readDuration(timeInput);
+    updateTimeStepButtons();
+    updateAxisStepButtons();
+
+    userChartPoints = Array.isArray(restored.userChartPoints)
+      ? restored.userChartPoints
+          .filter((p) => p && Number.isFinite(p.t) && Number.isFinite(p.s))
+          .map((p) => userChartClampPoint(p.t, p.s))
+      : [];
+    userChartShowFit = !!restored.userChartShowFit && userChartPoints.length >= 2;
+
+    setCreateGraphMode(true, { restore: true });
+  }
+
+  function applyDefaultTrackSettings() {
+    axisLengthInput.value = 10;
+    timeInput.value = 10;
+    axisLengthM = readAxisLength(axisLengthInput);
+    readDuration(timeInput);
+    updateTimeStepButtons();
+    updateAxisStepButtons();
+  }
+
+  function applyMotionModeUI() {
+    document.querySelectorAll('[data-motion]').forEach((btn) => {
+      const active = btn.dataset.motion === motionMode;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', String(active));
+    });
+  }
 
   const chartEl = document.getElementById('chart');
   const axisTrack = { raf: null };
@@ -517,6 +980,11 @@
   let chartMarksGroup = null;
   let motionMode = 'uniform';
   let runId = 0;
+  let createGraphMode = false;
+  let userChartPoints = [];
+  let userChartShowFit = false;
+  let userChartHold = null;
+  const USER_CHART_MAX_POINTS = 10;
 
   // Podíl uražené dráhy v čase p (0–1). Zpomalený pohyb končí s nulovou rychlostí.
   function motionFraction(p) {
@@ -533,19 +1001,67 @@
     return (TRACK_LEN / (2 * Math.PI * WHEEL_RADIUS)) * 360 * (axisLengthM / 10);
   }
 
-  function updateTimeLabel() {
-    document.getElementById('time-label').textContent = `Čas na ${axisLengthM} m`;
-  }
-
   function formatElapsed(sec) {
     const s = Math.round(sec * 100) / 100;
     const str = s.toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
     return str + ' s';
   }
 
+  function applyTimeChange() {
+    readDuration(timeInput);
+    redrawChart();
+    resetDog();
+    updateTimeStepButtons();
+    persistPanelSettings();
+  }
+
+  function stepTime(delta) {
+    const v = parseFloat(String(timeInput.value).replace(',', '.'));
+    const current = isNaN(v) ? CHART_TIME_MAX : v;
+    timeInput.value = Math.min(CHART_TIME_MAX, Math.max(CHART_TIME_MIN, current + delta));
+    applyTimeChange();
+  }
+
+  function updateTimeStepButtons() {
+    const current = readDuration(timeInput);
+    const container = timeInput.closest('.step-input');
+    container.querySelector('.step-up').disabled = current >= CHART_TIME_MAX;
+    container.querySelector('.step-down').disabled = current <= CHART_TIME_MIN;
+  }
+
+  function readAxisLength(input) {
+    const v = parseFloat(String(input.value).replace(',', '.'));
+    const m = Math.min(AXIS_LENGTH_MAX, Math.max(AXIS_LENGTH_MIN, isNaN(v) ? 10 : Math.round(v)));
+    input.value = m;
+    return m;
+  }
+
+  function applyAxisLengthChange() {
+    axisLengthM = readAxisLength(axisLengthInput);
+    resetDog();
+    rebuildAxis();
+    redrawChart();
+    updateAxisStepButtons();
+    persistPanelSettings();
+  }
+
+  function stepAxisLength(delta) {
+    const v = parseFloat(String(axisLengthInput.value).replace(',', '.'));
+    const current = isNaN(v) ? 10 : Math.round(v);
+    axisLengthInput.value = Math.min(AXIS_LENGTH_MAX, Math.max(AXIS_LENGTH_MIN, current + delta));
+    applyAxisLengthChange();
+  }
+
+  function updateAxisStepButtons() {
+    const current = readAxisLength(axisLengthInput);
+    const container = axisLengthInput.closest('.step-input');
+    container.querySelector('.step-up').disabled = current >= AXIS_LENGTH_MAX;
+    container.querySelector('.step-down').disabled = current <= AXIS_LENGTH_MIN;
+  }
+
   function readDuration(input) {
     const v = parseFloat(String(input.value).replace(',', '.'));
-    const sec = Math.min(CHART_TIME_MAX, Math.max(0.1, isNaN(v) ? 0.1 : v));
+    const sec = Math.min(CHART_TIME_MAX, Math.max(CHART_TIME_MIN, isNaN(v) ? CHART_TIME_MIN : v));
     input.value = sec;
     return sec;
   }
@@ -717,7 +1233,7 @@
   }
 
   function updateChartProgress(elapsedSec, durationSec) {
-    if (!chartProgressGroup) return;
+    if (createGraphMode || !chartProgressGroup) return;
     chartProgressGroup.innerHTML = '';
     if (!(elapsedSec > 0) || !(durationSec > 0)) return;
 
@@ -747,15 +1263,356 @@
   }
 
   function addChartMark(t, s) {
-    if (!chartMarksGroup) return;
-    const dot = document.createElementNS(NS, 'circle');
-    dot.setAttribute('cx', tToX(t));
-    dot.setAttribute('cy', sToY(s));
-    dot.setAttribute('r', '4');
-    dot.setAttribute('fill', '#fff');
-    dot.setAttribute('stroke', GRAPH_COLOR);
-    dot.setAttribute('stroke-width', '2');
-    chartMarksGroup.appendChild(dot);
+    if (createGraphMode || !chartMarksGroup) return;
+    const cx = tToX(t);
+    const cy = sToY(s);
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'chart-cross-marker');
+    g.setAttribute('pointer-events', 'none');
+
+    const addLine = (x1, y1, x2, y2) => {
+      const line = document.createElementNS(NS, 'line');
+      line.setAttribute('x1', cx + x1);
+      line.setAttribute('y1', cy + y1);
+      line.setAttribute('x2', cx + x2);
+      line.setAttribute('y2', cy + y2);
+      line.setAttribute('stroke', GRAPH_COLOR);
+      line.setAttribute('stroke-width', '2');
+      line.setAttribute('stroke-linecap', 'round');
+      g.appendChild(line);
+    };
+
+    addLine(-CHART_CROSS_HALF, 0, CHART_CROSS_HALF, 0);
+    addLine(0, -CHART_CROSS_HALF, 0, CHART_CROSS_HALF);
+    chartMarksGroup.appendChild(g);
+  }
+
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function userChartClampPoint(t, s) {
+    return {
+      t: Math.min(CHART_TIME_MAX, Math.max(0, t)),
+      s: Math.min(CHART_DIST_MAX, Math.max(0, s)),
+    };
+  }
+
+  function userChartWouldReject(t, s, ignoreIndex) {
+    return userChartPoints.some((p, i) => {
+      if (ignoreIndex != null && i === ignoreIndex) return false;
+      const dx = (p.t - t) / CHART_TIME_MAX;
+      const dy = (p.s - s) / CHART_DIST_MAX;
+      return dx * dx + dy * dy < 0.02 * 0.02;
+    });
+  }
+
+  function userChartSvgPointFromEvent(ev) {
+    const pt = chartEl.createSVGPoint();
+    pt.x = ev.clientX;
+    pt.y = ev.clientY;
+    const ctm = chartEl.getScreenCTM();
+    if (!ctm) return null;
+    return pt.matrixTransform(ctm.inverse());
+  }
+
+  function userChartPlotCoordsFromEvent(ev) {
+    const svgPt = userChartSvgPointFromEvent(ev);
+    if (!svgPt) return null;
+    const px = Math.min(ml + pw, Math.max(ml, svgPt.x));
+    const py = Math.min(mt + ph, Math.max(mt, svgPt.y));
+    const t = (px - ml) / pw * CHART_TIME_MAX;
+    const s = (mt + ph - py) / ph * CHART_DIST_MAX;
+    return userChartClampPoint(t, s);
+  }
+
+  function userChartCreateCross(cx, cy, index) {
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'chart-cross-marker');
+    g.setAttribute('transform', `translate(${cx},${cy})`);
+    if (index != null) g.setAttribute('data-index', String(index));
+
+    const hit = document.createElementNS(NS, 'circle');
+    hit.setAttribute('r', '14');
+    hit.setAttribute('fill', 'transparent');
+    hit.setAttribute('pointer-events', 'all');
+    g.appendChild(hit);
+
+    const addLine = (x1, y1, x2, y2) => {
+      const line = document.createElementNS(NS, 'line');
+      line.setAttribute('x1', x1);
+      line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2);
+      line.setAttribute('y2', y2);
+      line.setAttribute('stroke', GRAPH_COLOR);
+      line.setAttribute('stroke-width', '2');
+      line.setAttribute('stroke-linecap', 'round');
+      line.setAttribute('pointer-events', 'none');
+      g.appendChild(line);
+    };
+    addLine(-CHART_CROSS_HALF, 0, CHART_CROSS_HALF, 0);
+    addLine(0, -CHART_CROSS_HALF, 0, CHART_CROSS_HALF);
+    return g;
+  }
+
+  function userChartPointsSortedForCurve(pts) {
+    const copy = pts.map((p) => ({ t: p.t, s: p.s }));
+    copy.sort((a, b) => a.t - b.t || a.s - b.s);
+    const deduped = [];
+    copy.forEach((p) => {
+      const last = deduped[deduped.length - 1];
+      if (last && Math.abs(last.t - p.t) < 1e-5) {
+        last.s = (last.s + p.s) / 2;
+        return;
+      }
+      deduped.push(p);
+    });
+    return deduped;
+  }
+
+  function userChartBuildNaturalCubicSpline(xs, ys) {
+    const n = xs.length;
+    if (n < 2) return null;
+    if (n === 2) {
+      const [x0, x1] = xs;
+      const [y0, y1] = ys;
+      const slope = x1 === x0 ? 0 : (y1 - y0) / (x1 - x0);
+      return { eval: (x) => y0 + slope * (x - x0) };
+    }
+    const h = xs.slice(1).map((_, i) => xs[i + 1] - xs[i]);
+    if (h.some((v) => v <= 0)) return null;
+    const alpha = new Array(n).fill(0);
+    for (let i = 1; i < n - 1; i++) {
+      alpha[i] = (3 / h[i]) * (ys[i + 1] - ys[i]) - (3 / h[i - 1]) * (ys[i] - ys[i - 1]);
+    }
+    const l = new Array(n).fill(1);
+    const mu = new Array(n).fill(0);
+    const z = new Array(n).fill(0);
+    for (let i = 1; i < n - 1; i++) {
+      l[i] = 2 * (xs[i + 1] - xs[i - 1]) - h[i - 1] * mu[i - 1];
+      mu[i] = h[i] / l[i];
+      z[i] = (alpha[i] - h[i - 1] * z[i - 1]) / l[i];
+    }
+    const c = new Array(n).fill(0);
+    const b = new Array(n - 1);
+    const d = new Array(n - 1);
+    for (let j = n - 2; j >= 0; j--) {
+      c[j] = z[j] - mu[j] * c[j + 1];
+      b[j] = (ys[j + 1] - ys[j]) / h[j] - (h[j] * (c[j + 1] + 2 * c[j])) / 3;
+      d[j] = (c[j + 1] - c[j]) / (3 * h[j]);
+    }
+    return {
+      xs, ys, b, c, d,
+      eval(x) {
+        if (x <= xs[0]) {
+          const dx = x - xs[0];
+          return ys[0] + b[0] * dx + c[0] * dx * dx + d[0] * dx * dx * dx;
+        }
+        if (x >= xs[n - 1]) {
+          const ii = n - 2;
+          const dx = x - xs[ii];
+          return ys[ii] + b[ii] * dx + c[ii] * dx * dx + d[ii] * dx * dx * dx;
+        }
+        let k = 0;
+        while (k < n - 2 && x > xs[k + 1]) k++;
+        const dx = x - xs[k];
+        return ys[k] + b[k] * dx + c[k] * dx * dx + d[k] * dx * dx * dx;
+      },
+    };
+  }
+
+  function userChartFittedCurvePathData(pts) {
+    const sorted = userChartPointsSortedForCurve(pts);
+    if (sorted.length < 2) return '';
+    const xs = sorted.map((p) => p.t);
+    const ys = sorted.map((p) => p.s);
+    const spline = userChartBuildNaturalCubicSpline(xs, ys);
+    if (!spline) return '';
+    const t0 = xs[0];
+    const t1 = xs[xs.length - 1];
+    const steps = Math.max(48, Math.ceil((t1 - t0) * 16));
+    const parts = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = t0 + (i / steps) * (t1 - t0);
+      const s = Math.min(CHART_DIST_MAX, Math.max(0, spline.eval(t)));
+      parts.push(`${tToX(t).toFixed(2)},${sToY(s).toFixed(2)}`);
+    }
+    return `M ${parts.join(' L ')}`;
+  }
+
+  function userChartDrawFittedCurve(parent) {
+    const d = userChartFittedCurvePathData(userChartPoints);
+    if (!d) return;
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('class', 'user-fitted-curve');
+    path.setAttribute('d', d);
+    parent.appendChild(path);
+  }
+
+  function userChartDrawHandles(parent) {
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'user-chart-handles');
+    userChartPoints.forEach((p, i) => {
+      if (userChartHold?.mode === 'existing' && userChartHold.index === i) return;
+      g.appendChild(userChartCreateCross(tToX(p.t), sToY(p.s), i));
+    });
+    if (userChartHold) {
+      const preview = userChartCreateCross(tToX(userChartHold.t), sToY(userChartHold.s), null);
+      preview.setAttribute('opacity', '0.75');
+      g.appendChild(preview);
+    }
+    parent.appendChild(g);
+  }
+
+  function updateFitCurveControls() {
+    const fitBtn = document.getElementById('fit-curve-btn');
+    const canFit = userChartPoints.length >= 2;
+    if (!fitBtn) return;
+    fitBtn.disabled = !canFit;
+    if (!canFit) userChartShowFit = false;
+    fitBtn.classList.toggle('is-active', userChartShowFit && canFit);
+    fitBtn.setAttribute('aria-pressed', String(userChartShowFit && canFit));
+  }
+
+  function userChartEndHoldListeners() {
+    document.removeEventListener('pointermove', onUserChartHoldMove);
+    document.removeEventListener('pointerup', onUserChartHoldUp);
+    document.removeEventListener('pointercancel', onUserChartHoldUp);
+  }
+
+  function userChartCommitHold() {
+    if (!userChartHold) return;
+    const hold = userChartHold;
+    const coords = userChartClampPoint(hold.t, hold.s);
+    userChartHold = null;
+    chartEl.classList.remove('is-holding-point');
+    if (hold.mode === 'new') {
+      if (userChartPoints.length < USER_CHART_MAX_POINTS && !userChartWouldReject(coords.t, coords.s)) {
+        userChartPoints.push({ t: coords.t, s: coords.s });
+      }
+    } else if (hold.mode === 'existing' && hold.index != null) {
+      if (!userChartWouldReject(coords.t, coords.s, hold.index)) {
+        userChartPoints[hold.index] = { t: coords.t, s: coords.s };
+      }
+    }
+    userChartPoints.sort((a, b) => a.t - b.t);
+    updateFitCurveControls();
+    redrawChart();
+  }
+
+  function onUserChartHoldMove(ev) {
+    if (!userChartHold) return;
+    if (typeof userChartHold.pointerId === 'number' && ev.pointerId !== userChartHold.pointerId) return;
+    const coords = userChartPlotCoordsFromEvent(ev);
+    if (!coords) return;
+    userChartHold.t = coords.t;
+    userChartHold.s = coords.s;
+    redrawChart();
+  }
+
+  function onUserChartHoldUp(ev) {
+    if (!userChartHold) return;
+    if (typeof userChartHold.pointerId === 'number' && ev.pointerId !== userChartHold.pointerId) return;
+    const coords = userChartPlotCoordsFromEvent(ev);
+    if (coords) {
+      userChartHold.t = coords.t;
+      userChartHold.s = coords.s;
+    }
+    if (chartEl.releasePointerCapture && typeof userChartHold.pointerId === 'number') {
+      try { chartEl.releasePointerCapture(userChartHold.pointerId); } catch (_) { /* ignore */ }
+    }
+    userChartEndHoldListeners();
+    userChartCommitHold();
+  }
+
+  function userChartMarkerFromTarget(target) {
+    let el = target;
+    while (el && el !== chartEl) {
+      if (el.classList?.contains('chart-cross-marker') && el.hasAttribute('data-index')) return el;
+      el = el.parentNode;
+    }
+    return null;
+  }
+
+  function onUserChartPointerDown(ev) {
+    if (!createGraphMode) return;
+    if (ev.button != null && ev.button !== 0) return;
+    const marker = userChartMarkerFromTarget(ev.target);
+    let hold;
+    if (marker) {
+      const idx = parseInt(marker.getAttribute('data-index'), 10);
+      if (!Number.isFinite(idx) || idx < 0 || idx >= userChartPoints.length) return;
+      hold = { mode: 'existing', index: idx, t: userChartPoints[idx].t, s: userChartPoints[idx].s };
+    } else {
+      const coords = userChartPlotCoordsFromEvent(ev);
+      if (!coords || userChartPoints.length >= USER_CHART_MAX_POINTS || userChartWouldReject(coords.t, coords.s)) return;
+      hold = { mode: 'new', index: null, t: coords.t, s: coords.s };
+    }
+    userChartHold = hold;
+    chartEl.classList.add('is-holding-point');
+    if (typeof ev.pointerId === 'number' && chartEl.setPointerCapture) {
+      try {
+        chartEl.setPointerCapture(ev.pointerId);
+        userChartHold.pointerId = ev.pointerId;
+      } catch (_) { /* ignore */ }
+    }
+    document.addEventListener('pointermove', onUserChartHoldMove);
+    document.addEventListener('pointerup', onUserChartHoldUp);
+    document.addEventListener('pointercancel', onUserChartHoldUp);
+    redrawChart();
+  }
+
+  function onUserChartDblClick(ev) {
+    if (!createGraphMode) return;
+    const marker = userChartMarkerFromTarget(ev.target);
+    if (!marker) return;
+    ev.preventDefault();
+    const idx = parseInt(marker.getAttribute('data-index'), 10);
+    if (!Number.isFinite(idx) || idx < 0 || idx >= userChartPoints.length) return;
+    userChartPoints.splice(idx, 1);
+    if (userChartPoints.length < 2) userChartShowFit = false;
+    updateFitCurveControls();
+    redrawChart();
+  }
+
+  function applyRandomTrackSettings() {
+    axisLengthInput.value = randomInt(AXIS_LENGTH_MIN, AXIS_LENGTH_MAX);
+    timeInput.value = randomInt(CHART_TIME_MIN, CHART_TIME_MAX);
+    axisLengthM = readAxisLength(axisLengthInput);
+    readDuration(timeInput);
+    updateTimeStepButtons();
+    updateAxisStepButtons();
+  }
+
+  function setCreateGraphMode(active, options = {}) {
+    const { restore = false } = options;
+    createGraphMode = active;
+    document.querySelector('.app').classList.toggle('is-create-graph', active);
+    const createBtn = document.getElementById('create-graph-btn');
+    createBtn.classList.toggle('is-active', active);
+    createBtn.setAttribute('aria-pressed', String(active));
+    createBtn.textContent = active ? 'Ukončit graf' : 'Vytvořit graf';
+    document.getElementById('graph-tools-row').hidden = !active;
+    chartEl.classList.toggle('is-create-graph', active);
+
+    userChartHold = null;
+    userChartEndHoldListeners();
+
+    if (!restore) {
+      userChartPoints = [];
+      userChartShowFit = false;
+      if (active) {
+        applyRandomTrackSettings();
+      } else {
+        applyDefaultTrackSettings();
+      }
+    }
+
+    updateFitCurveControls();
+    resetDog();
+    rebuildAxis();
+    redrawChart();
+    persistPanelSettings();
   }
 
   function redrawChart() {
@@ -763,6 +1620,16 @@
     buildChartDefs(chartEl);
     drawChartGrid(chartEl);
     drawChartAxes(chartEl);
+
+    if (createGraphMode) {
+      chartMarksGroup = null;
+      const body = document.createElementNS(NS, 'g');
+      if (userChartShowFit && userChartPoints.length >= 2) userChartDrawFittedCurve(body);
+      userChartDrawHandles(body);
+      chartEl.appendChild(body);
+      return;
+    }
+
     chartProgressGroup = document.createElementNS(NS, 'g');
     chartProgressGroup.setAttribute('class', 'chart-progress');
     chartProgressGroup.setAttribute('pointer-events', 'none');
@@ -783,6 +1650,11 @@
       el.textContent = '';
       el.classList.remove('is-visible');
     });
+    if (createGraphMode) {
+      document.getElementById('axis').querySelectorAll('.axis-label').forEach((el) => {
+        el.classList.remove('is-visible');
+      });
+    }
     if (chartMarksGroup) chartMarksGroup.innerHTML = '';
     updateChartProgress(0, 1);
   }
@@ -790,7 +1662,14 @@
   function showAxisTime(el, elapsed) {
     el.textContent = formatElapsed(elapsed);
     el.classList.add('is-visible');
-    addChartMark(elapsed, Number(el.dataset.meter));
+    if (createGraphMode) {
+      const label = document.getElementById('axis').querySelector(
+        `.axis-label[data-meter="${el.dataset.meter}"]`
+      );
+      if (label) label.classList.add('is-visible');
+    } else {
+      addChartMark(elapsed, Number(el.dataset.meter));
+    }
   }
 
   function axisMarks() {
@@ -821,6 +1700,7 @@
 
       const label = document.createElementNS(NS, 'text');
       label.setAttribute('class', 'axis-label');
+      label.setAttribute('data-meter', m);
       label.setAttribute('x', x);
       label.setAttribute('y', '20');
       if (i === 0) label.setAttribute('text-anchor', 'start');
@@ -902,6 +1782,194 @@
   }
 
   const timeInput = document.getElementById('time');
+  const axisLengthInput = document.getElementById('axis-length');
+
+  const valueKeypadOverlay = document.getElementById('valueKeypadOverlay');
+  const valueKeypadTitle = document.getElementById('valueKeypadTitle');
+  const valueKeypadDisplay = document.getElementById('valueKeypadDisplay');
+  const valueKeypadError = document.getElementById('valueKeypadError');
+  const valueKeypadConfirm = document.getElementById('valueKeypadConfirm');
+  const valueKeypadCancel = document.getElementById('valueKeypadCancel');
+  const valueMathKeypad = document.getElementById('valueMathKeypad');
+  let valueKeypadTarget = null;
+  let valueKeypadDraft = '';
+
+  function prefersAppNumericKeypad() {
+    try {
+      if (window.matchMedia('(pointer: coarse)').matches) return true;
+      if (navigator.maxTouchPoints > 0 && window.matchMedia('(hover: none)').matches) return true;
+    } catch (_err) { /* ignore */ }
+    return false;
+  }
+
+  const useAppNumericKeypad = prefersAppNumericKeypad();
+
+  function applyNumericKeypadMode(input) {
+    if (useAppNumericKeypad) {
+      input.readOnly = true;
+      input.setAttribute('inputmode', 'none');
+    }
+  }
+
+  function keypadUnitFor(input) {
+    return input === axisLengthInput ? ' m' : ' s';
+  }
+
+  function keypadTitleFor(input) {
+    return input === axisLengthInput ? 'Dráha' : 'Čas';
+  }
+
+  function clearValueKeypadError() {
+    valueKeypadError.hidden = true;
+    valueKeypadError.textContent = '';
+    valueKeypadDisplay.classList.remove('is-invalid');
+  }
+
+  function showValueKeypadError(message) {
+    valueKeypadError.hidden = false;
+    valueKeypadError.textContent = message;
+    valueKeypadDisplay.classList.add('is-invalid');
+  }
+
+  function validateValueKeypadDraft(requireValue) {
+    const raw = valueKeypadDraft.trim();
+    if (raw === '') return requireValue ? { ok: false, message: 'Zadej hodnotu.' } : { ok: true };
+    const v = parseFloat(raw.replace(',', '.'));
+    if (!Number.isFinite(v)) return { ok: false, message: 'Zadej platné číslo.' };
+    if (valueKeypadTarget === axisLengthInput) {
+      const m = Math.round(v);
+      if (m < AXIS_LENGTH_MIN || m > AXIS_LENGTH_MAX) {
+        return { ok: false, message: `Hodnota musí být ${AXIS_LENGTH_MIN}–${AXIS_LENGTH_MAX} m.` };
+      }
+    } else if (v < CHART_TIME_MIN || v > CHART_TIME_MAX) {
+      return { ok: false, message: `Hodnota musí být ${CHART_TIME_MIN}–${CHART_TIME_MAX} s.` };
+    }
+    return { ok: true };
+  }
+
+  function updateValueKeypadDisplay() {
+    const suffix = valueKeypadDraft.trim() ? keypadUnitFor(valueKeypadTarget) : '';
+    valueKeypadDisplay.textContent = `${valueKeypadDraft}${suffix}`;
+    const result = validateValueKeypadDraft(false);
+    if (!result.ok) showValueKeypadError(result.message);
+    else clearValueKeypadError();
+  }
+
+  function showValueKeypad(input) {
+    valueKeypadTarget = input;
+    valueKeypadDraft = '';
+    clearValueKeypadError();
+    valueKeypadTitle.textContent = keypadTitleFor(input);
+    updateValueKeypadDisplay();
+    valueKeypadOverlay.hidden = false;
+    input.blur();
+  }
+
+  function hideValueKeypad() {
+    valueKeypadTarget = null;
+    valueKeypadDraft = '';
+    clearValueKeypadError();
+    valueKeypadOverlay.hidden = true;
+    valueKeypadDisplay.textContent = '';
+  }
+
+  function insertIntoValueKeypadDraft(value) {
+    if (value === ',' || value === '.') {
+      if (valueKeypadDraft.includes(',') || valueKeypadDraft.includes('.')) return;
+    }
+    if (valueKeypadDraft.length >= 8) return;
+    valueKeypadDraft += value;
+    updateValueKeypadDisplay();
+  }
+
+  function clearValueKeypadDraft() {
+    valueKeypadDraft = '';
+    updateValueKeypadDisplay();
+  }
+
+  function confirmValueKeypad() {
+    if (!valueKeypadTarget) return;
+    const result = validateValueKeypadDraft(true);
+    if (!result.ok) {
+      showValueKeypadError(result.message);
+      return;
+    }
+    const raw = valueKeypadDraft.trim();
+    if (valueKeypadTarget === axisLengthInput) {
+      const m = Math.round(parseFloat(raw.replace(',', '.')));
+      valueKeypadTarget.value = m;
+    } else {
+      valueKeypadTarget.value = raw.replace('.', ',');
+    }
+    const input = valueKeypadTarget;
+    hideValueKeypad();
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  function handleValueKeypadClick(event) {
+    const key = event.currentTarget;
+    if (key.disabled) return;
+    const action = key.getAttribute('data-action');
+    const value = key.getAttribute('data-value');
+    if (action === 'clear') {
+      clearValueKeypadDraft();
+      return;
+    }
+    if (value) insertIntoValueKeypadDraft(value);
+  }
+
+  function openValueKeypadFromEvent(ev) {
+    if (ev.target.closest('.step-btn')) return;
+    const stepInput = ev.target.closest('.step-input');
+    if (!stepInput) return;
+    const input = stepInput.querySelector('input');
+    if (!input || (input !== timeInput && input !== axisLengthInput)) return;
+    ev.preventDefault();
+    showValueKeypad(input);
+  }
+
+  applyNumericKeypadMode(timeInput);
+  applyNumericKeypadMode(axisLengthInput);
+
+  document.querySelector('.setup-panel').addEventListener('pointerdown', openValueKeypadFromEvent);
+
+  valueKeypadConfirm.addEventListener('click', confirmValueKeypad);
+  valueKeypadCancel.addEventListener('click', hideValueKeypad);
+  valueKeypadOverlay.addEventListener('click', (ev) => {
+    if (ev.target === valueKeypadOverlay) hideValueKeypad();
+  });
+  valueMathKeypad.querySelectorAll('.table-math-keypad__key').forEach((keyBtn) => {
+    keyBtn.addEventListener('mousedown', (ev) => ev.preventDefault());
+    keyBtn.addEventListener('click', handleValueKeypadClick);
+  });
+  document.addEventListener('keydown', (ev) => {
+    if (!valueKeypadTarget) return;
+    if (ev.key === 'Escape') {
+      ev.preventDefault();
+      hideValueKeypad();
+      return;
+    }
+    if (ev.key === 'Enter') {
+      ev.preventDefault();
+      confirmValueKeypad();
+      return;
+    }
+    if (ev.key === 'Backspace') {
+      ev.preventDefault();
+      valueKeypadDraft = valueKeypadDraft.slice(0, -1);
+      updateValueKeypadDisplay();
+      return;
+    }
+    if (/^[0-9]$/.test(ev.key)) {
+      ev.preventDefault();
+      insertIntoValueKeypadDraft(ev.key);
+      return;
+    }
+    if (ev.key === ',' || ev.key === '.') {
+      ev.preventDefault();
+      insertIntoValueKeypadDraft(',');
+    }
+  });
 
   document.getElementById('start-btn').addEventListener('click', async () => {
     const btn = document.getElementById('start-btn');
@@ -916,19 +1984,15 @@
     resetDog();
   });
 
-  timeInput.addEventListener('change', () => {
-    readDuration(timeInput);
-    redrawChart();
-    resetDog();
-  });
+  timeInput.closest('.step-input').querySelector('.step-up').addEventListener('click', () => stepTime(1));
+  timeInput.closest('.step-input').querySelector('.step-down').addEventListener('click', () => stepTime(-1));
 
-  document.getElementById('axis-length').addEventListener('change', (e) => {
-    axisLengthM = Number(e.target.value);
-    updateTimeLabel();
-    resetDog();
-    rebuildAxis();
-    redrawChart();
-  });
+  axisLengthInput.closest('.step-input').querySelector('.step-up').addEventListener('click', () => stepAxisLength(1));
+  axisLengthInput.closest('.step-input').querySelector('.step-down').addEventListener('click', () => stepAxisLength(-1));
+
+  timeInput.addEventListener('change', applyTimeChange);
+
+  axisLengthInput.addEventListener('change', applyAxisLengthChange);
 
   const motionButtons = [...document.querySelectorAll('[data-motion]')];
   motionButtons.forEach((btn) => {
@@ -941,13 +2005,38 @@
         other.setAttribute('aria-pressed', String(active));
       });
       document.getElementById('start-btn').disabled = false;
+      persistPanelSettings();
       resetDog();
     });
   });
 
+  document.querySelectorAll('[data-measure-link]').forEach((link) => {
+    link.addEventListener('click', persistPanelSettings);
+  });
+
+  document.getElementById('create-graph-btn').addEventListener('click', () => {
+    setCreateGraphMode(!createGraphMode);
+  });
+
+  document.getElementById('fit-curve-btn').addEventListener('click', () => {
+    if (userChartPoints.length < 2) return;
+    userChartShowFit = !userChartShowFit;
+    updateFitCurveControls();
+    redrawChart();
+  });
+
+  chartEl.addEventListener('pointerdown', onUserChartPointerDown);
+  chartEl.addEventListener('dblclick', onUserChartDblClick);
+
+  restorePanelSettings();
+  applyDefaultTrackSettings();
+  applyMotionModeUI();
+  applyRestoredCreateGraphMode();
+
   rebuildAxis();
   redrawChart();
-  updateTimeLabel();
+  updateTimeStepButtons();
+  updateAxisStepButtons();
   resetDog();
 </script>
 </body>

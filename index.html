@@ -550,22 +550,23 @@
       font-size: 12px;
       fill: var(--muted);
     }
-    .app.is-create-graph .axis-label {
-      visibility: hidden;
-    }
-    .app.is-create-graph .axis-label.is-visible {
-      visibility: visible;
-    }
-    .axis-time {
-      font-family: "Fenomen Sans", ui-sans-serif, system-ui, sans-serif;
-      font-size: 12px;
-      font-weight: 600;
-      fill: var(--time);
+    .sec-mark {
       visibility: hidden;
       pointer-events: none;
     }
-    .axis-time.is-visible {
+    .sec-mark.is-visible {
       visibility: visible;
+    }
+    .sec-mark-time {
+      font-family: "Fenomen Sans", ui-sans-serif, system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      fill: var(--time);
+    }
+    .sec-mark-dist {
+      font-family: "Fenomen Sans", ui-sans-serif, system-ui, sans-serif;
+      font-size: 12px;
+      fill: var(--muted);
     }
 
     .table-keypad-overlay {
@@ -838,8 +839,8 @@
         <div class="row">
           <span class="row-label">Měřit po</span>
           <div class="variant-toggle" role="group" aria-label="Měřit po">
-            <span class="variant-btn is-active" aria-current="true">metrech</span>
-            <a class="variant-btn" href="pes-jednoducha-osa.html" data-measure-link>sekundách</a>
+            <span class="variant-btn is-active" aria-current="true">sekundách</span>
+            <a class="variant-btn" href="pes-jednoducha-osa.html" data-measure-link>metrech</a>
           </div>
         </div>
       </div>
@@ -1111,7 +1112,6 @@
   let userChartPoints = [];
   let userChartShowFit = false;
   let userChartHold = null;
-  const USER_CHART_MAX_POINTS = 10;
 
   // Podíl uražené dráhy v čase p (0–1). Zpomalený pohyb končí s nulovou rychlostí.
   function motionFraction(p) {
@@ -1119,19 +1119,28 @@
     return motionMode === 'decelerated' ? q * (2 - q) : q;
   }
 
-  function motionTimeForFraction(f) {
-    const q = Math.min(1, Math.max(0, f));
-    return motionMode === 'decelerated' ? 1 - Math.sqrt(1 - q) : q;
-  }
-
   function getWheelDeg() {
     return (TRACK_LEN / (2 * Math.PI * WHEEL_RADIUS)) * 360 * (axisLengthM / 10);
   }
 
-  function formatElapsed(sec) {
+  function formatValue(sec) {
     const s = Math.round(sec * 100) / 100;
-    const str = s.toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
-    return str + ' s';
+    return s.toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
+  }
+
+  function formatElapsed(sec) {
+    return formatValue(sec) + ' s';
+  }
+
+  function formatDistance(meters) {
+    return formatValue(meters) + ' m';
+  }
+
+  function readDuration(input) {
+    const v = parseFloat(String(input.value).replace(',', '.'));
+    const sec = Math.min(CHART_TIME_MAX, Math.max(CHART_TIME_MIN, isNaN(v) ? CHART_TIME_MIN : v));
+    input.value = sec;
+    return sec;
   }
 
   function applyTimeChange() {
@@ -1186,18 +1195,25 @@
     container.querySelector('.step-down').disabled = current <= AXIS_LENGTH_MIN;
   }
 
-  function readDuration(input) {
-    const v = parseFloat(String(input.value).replace(',', '.'));
-    const sec = Math.min(CHART_TIME_MAX, Math.max(CHART_TIME_MIN, isNaN(v) ? CHART_TIME_MIN : v));
-    input.value = sec;
-    return sec;
-  }
-
   function chartDuration() {
     return readDuration(document.getElementById('time'));
   }
 
   const AXIS_DIVISIONS = 10;
+
+  function secondStep(durationSec) {
+    return Math.max(1, Math.ceil(durationSec / AXIS_DIVISIONS));
+  }
+
+  function secondMarkTimes(durationSec) {
+    const step = secondStep(durationSec);
+    const times = [];
+    for (let i = 0; i < AXIS_DIVISIONS; i++) {
+      times.push(Math.min(i * step, durationSec));
+    }
+    times.push(durationSec);
+    return times.filter((t, i, arr) => i === 0 || t !== arr[i - 1]);
+  }
 
   function chartTimeStep() {
     return CHART_TIME_MAX / AXIS_DIVISIONS;
@@ -1799,7 +1815,7 @@
     userChartHold = null;
     chartEl.classList.remove('is-holding-point');
     if (hold.mode === 'new') {
-      if (userChartPoints.length < USER_CHART_MAX_POINTS && !userChartWouldReject(coords.t, coords.s)) {
+      if (!userChartWouldReject(coords.t, coords.s)) {
         userChartPoints.push({ t: coords.t, s: coords.s });
       }
     } else if (hold.mode === 'existing' && hold.index != null) {
@@ -1858,7 +1874,7 @@
       hold = { mode: 'existing', index: idx, t: userChartPoints[idx].t, s: userChartPoints[idx].s };
     } else {
       const coords = userChartPlotCoordsFromEvent(ev);
-      if (!coords || userChartPoints.length >= USER_CHART_MAX_POINTS || userChartWouldReject(coords.t, coords.s)) return;
+      if (!coords || userChartWouldReject(coords.t, coords.s)) return;
       hold = { mode: 'new', index: null, t: coords.t, s: coords.s };
     }
     userChartHold = hold;
@@ -1891,8 +1907,8 @@
 
   function createGraphUniformMeasurePairs() {
     const pairs = [];
-    for (const axisLength of [10, 20]) {
-      for (const duration of [5, 10]) {
+    for (let duration = CHART_TIME_MIN; duration <= CHART_TIME_MAX; duration++) {
+      for (let axisLength = duration; axisLength <= AXIS_LENGTH_MAX; axisLength += duration) {
         pairs.push({ axisLength, duration });
       }
     }
@@ -1956,7 +1972,6 @@
     drawChartAxes(chartEl);
 
     if (createGraphMode) {
-      chartMarksGroup = null;
       const body = document.createElementNS(NS, 'g');
       if (userChartShowFit && userChartPoints.length >= 2) userChartDrawFittedCurve(body);
       userChartDrawHandles(body);
@@ -1975,39 +1990,102 @@
     updateChartProgress(0, 1);
   }
 
+  function clearSecondMarks() {
+    document.getElementById('axis').querySelectorAll('.sec-mark').forEach((n) => n.remove());
+  }
+
   function resetAxisTimes() {
     if (axisTrack.raf) {
       cancelAnimationFrame(axisTrack.raf);
       axisTrack.raf = null;
     }
-    document.getElementById('axis').querySelectorAll('.axis-time').forEach((el) => {
-      el.textContent = '';
-      el.classList.remove('is-visible');
-    });
-    if (createGraphMode) {
-      document.getElementById('axis').querySelectorAll('.axis-label').forEach((el) => {
-        el.classList.remove('is-visible');
-      });
-    }
+    clearSecondMarks();
     if (chartMarksGroup) chartMarksGroup.innerHTML = '';
     updateChartProgress(0, 1);
   }
 
-  function showAxisTime(el, elapsed) {
-    el.textContent = formatElapsed(elapsed);
-    el.classList.add('is-visible');
-    if (createGraphMode) {
-      const label = document.getElementById('axis').querySelector(
-        `.axis-label[data-meter="${el.dataset.meter}"]`
-      );
-      if (label) label.classList.add('is-visible');
-    } else {
-      addChartMark(elapsed, Number(el.dataset.meter));
-    }
+  function applySecondMarkDistOffsets() {
+    if (motionMode !== 'decelerated') return;
+    const marks = [...document.getElementById('axis').querySelectorAll('.sec-mark')];
+    const overlapX = 36;
+    const baseY = 20;
+
+    marks.forEach((mark, i) => {
+      const x = Number(mark.dataset.x);
+      let y = baseY;
+      for (let j = 0; j < i; j++) {
+        const prevX = Number(marks[j].dataset.x);
+        if (Math.abs(x - prevX) >= overlapX) continue;
+        const prevY = Number(marks[j].querySelector('.sec-mark-dist').getAttribute('y'));
+        y = Math.max(y, prevY + 10);
+      }
+      mark.querySelector('.sec-mark-dist').setAttribute('y', String(y));
+    });
   }
 
-  function axisMarks() {
-    return Array.from({ length: AXIS_DIVISIONS + 1 }, (_, i) => (i / AXIS_DIVISIONS) * axisLengthM);
+  function createSecondMark(axis, sec, durationSec) {
+    const ratio = motionFraction(sec / durationSec);
+    const x = ratio * TRACK_LEN;
+    const dist = axisLengthM * ratio;
+
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'sec-mark pending');
+    g.dataset.at = String(sec);
+    g.dataset.dist = String(dist);
+    g.dataset.x = String(x);
+
+    const tick = document.createElementNS(NS, 'line');
+    tick.setAttribute('class', 'axis-tick');
+    tick.setAttribute('x1', x);
+    tick.setAttribute('y1', -5);
+    tick.setAttribute('x2', x);
+    tick.setAttribute('y2', 5);
+    g.appendChild(tick);
+
+    const timeText = document.createElementNS(NS, 'text');
+    timeText.setAttribute('class', 'sec-mark-time');
+    timeText.setAttribute('x', x);
+    timeText.setAttribute('y', -10);
+    timeText.setAttribute('text-anchor', 'middle');
+    timeText.textContent = formatElapsed(sec);
+    g.appendChild(timeText);
+
+    const distText = document.createElementNS(NS, 'text');
+    distText.setAttribute('class', 'sec-mark-dist');
+    distText.setAttribute('x', x);
+    distText.setAttribute('y', 20);
+    distText.setAttribute('text-anchor', 'middle');
+    distText.textContent = formatDistance(dist);
+    g.appendChild(distText);
+
+    axis.appendChild(g);
+    return g;
+  }
+
+  function revealSecondMark(g) {
+    g.classList.remove('pending');
+    g.classList.add('is-visible');
+    addChartMark(Number(g.dataset.at), Number(g.dataset.dist));
+  }
+
+  function prepareSecondMarks(durationSec) {
+    clearSecondMarks();
+    const axis = document.getElementById('axis');
+    const times = secondMarkTimes(durationSec);
+
+    times.forEach((sec, i) => {
+      const mark = createSecondMark(axis, sec, durationSec);
+      if (i === 0) {
+        revealSecondMark(mark);
+        mark.querySelector('.sec-mark-time').setAttribute('text-anchor', 'start');
+        mark.querySelector('.sec-mark-dist').setAttribute('text-anchor', 'start');
+      } else if (i === times.length - 1) {
+        mark.querySelector('.sec-mark-time').setAttribute('text-anchor', 'end');
+        mark.querySelector('.sec-mark-dist').setAttribute('text-anchor', 'end');
+      }
+    });
+
+    applySecondMarkDistOffsets();
   }
 
   function buildAxis(container) {
@@ -2019,39 +2097,20 @@
     line.setAttribute('y2', '0');
     container.appendChild(line);
 
-    axisMarks().forEach((m, i) => {
+    [0, axisLengthM].forEach((m) => {
       const x = (m / axisLengthM) * TRACK_LEN;
 
-      if (i > 0) {
-        const tick = document.createElementNS(NS, 'line');
-        tick.setAttribute('class', 'axis-tick');
-        tick.setAttribute('x1', x);
-        tick.setAttribute('y1', -5);
-        tick.setAttribute('x2', x);
-        tick.setAttribute('y2', 5);
-        container.appendChild(tick);
+      if (!createGraphMode) {
+        const label = document.createElementNS(NS, 'text');
+        label.setAttribute('class', 'axis-label');
+        label.setAttribute('x', x);
+        label.setAttribute('y', '20');
+        if (m === 0) label.setAttribute('text-anchor', 'start');
+        else if (m === axisLengthM) label.setAttribute('text-anchor', 'end');
+        else label.setAttribute('text-anchor', 'middle');
+        label.textContent = m + ' m';
+        container.appendChild(label);
       }
-
-      const label = document.createElementNS(NS, 'text');
-      label.setAttribute('class', 'axis-label');
-      label.setAttribute('data-meter', m);
-      label.setAttribute('x', x);
-      label.setAttribute('y', '20');
-      if (i === 0) label.setAttribute('text-anchor', 'start');
-      else if (i === AXIS_DIVISIONS) label.setAttribute('text-anchor', 'end');
-      else label.setAttribute('text-anchor', 'middle');
-      label.textContent = formatTick(m, 'm');
-      container.appendChild(label);
-
-      const timeLabel = document.createElementNS(NS, 'text');
-      timeLabel.setAttribute('class', 'axis-time');
-      timeLabel.setAttribute('data-meter', m);
-      timeLabel.setAttribute('x', x);
-      timeLabel.setAttribute('y', '36');
-      if (i === 0) timeLabel.setAttribute('text-anchor', 'start');
-      else if (i === AXIS_DIVISIONS) timeLabel.setAttribute('text-anchor', 'end');
-      else timeLabel.setAttribute('text-anchor', 'middle');
-      container.appendChild(timeLabel);
     });
   }
 
@@ -2079,13 +2138,9 @@
   function runDog(timeInput) {
     const myRun = ++runId;
     const duration = readDuration(timeInput);
+    prepareSecondMarks(duration);
     const axis = document.getElementById('axis');
-    const thresholds = [...axis.querySelectorAll('.axis-time')].map((el) => ({
-      el,
-      at: duration * motionTimeForFraction(Number(el.dataset.meter) / axisLengthM)
-    }));
-
-    if (thresholds[0]) showAxisTime(thresholds[0].el, 0);
+    const pending = () => [...axis.querySelectorAll('.sec-mark.pending')];
 
     return new Promise((resolve) => {
       const start = performance.now();
@@ -2098,10 +2153,8 @@
         const elapsed = Math.min((now - start) / 1000, duration);
         setDogProgress(motionFraction(elapsed / duration));
         updateChartProgress(elapsed, duration);
-        thresholds.forEach(({ el, at }) => {
-          if (elapsed >= at - 0.02 && !el.classList.contains('is-visible')) {
-            showAxisTime(el, at);
-          }
+        pending().forEach((g) => {
+          if (elapsed >= Number(g.dataset.at) - 0.02) revealSecondMark(g);
         });
 
         if (elapsed < duration) {

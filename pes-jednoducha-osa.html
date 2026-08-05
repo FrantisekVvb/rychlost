@@ -839,7 +839,7 @@
         <div class="row">
           <span class="row-label">Měřit po</span>
           <div class="variant-toggle" role="group" aria-label="Měřit po">
-            <a class="variant-btn" href="pes.html" data-measure-link>metrech</a>
+            <a class="variant-btn" href="./" data-measure-link>metrech</a>
             <span class="variant-btn is-active" aria-current="true">sekundách</span>
           </div>
         </div>
@@ -1015,6 +1015,12 @@
   const CHART_CROSS_HALF = 7;
   const SETTINGS_STORAGE_KEY = 'rychlost-panel-settings';
   let pendingCreateGraphRestore = null;
+
+  function isPageReload() {
+    const entry = performance.getEntriesByType('navigation')[0];
+    if (entry) return entry.type === 'reload';
+    return typeof performance.navigation !== 'undefined' && performance.navigation.type === 1;
+  }
 
   function persistPanelSettings() {
     const data = {
@@ -2420,7 +2426,11 @@
     if (ev.key === 'Escape' && chartFullscreenOpen) setChartFullscreen(false);
   });
 
-  restorePanelSettings();
+  if (isPageReload()) {
+    sessionStorage.removeItem(SETTINGS_STORAGE_KEY);
+  } else {
+    restorePanelSettings();
+  }
   applyDefaultTrackSettings();
   applyMotionModeUI();
   applyRestoredCreateGraphMode();
